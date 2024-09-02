@@ -1,10 +1,14 @@
 import numpy as np
+
 import os
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
+import matplotlib.pyplot as plt
+dlc = dict(dlblue = '#0096ff', dlorange = '#FF9300', dldarkred='#C00000', dlmagenta='#FF40FF', dlpurple='#7030A0', dldarkblue =  '#0D5BDC')
 
 def get_data():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,11 +28,9 @@ def get_data():
 def choose_degree(x_train, x_cv, y_train, y_cv):
     train_mses = []
     cv_mses = []
-    polys = []
     for degree in range(1, 11):
         poly = PolynomialFeatures(degree=degree, include_bias=False)
         x_train_mapped = poly.fit_transform(x_train)
-        polys.append(poly)
 
         scalar = StandardScaler()
         x_train_mapped_scaled = scalar.fit_transform(x_train_mapped)
@@ -46,3 +48,19 @@ def choose_degree(x_train, x_cv, y_train, y_cv):
         cv_mses.append(mean_squared_error(y_cv, yhat) / 2)
 
     return train_mses, cv_mses
+
+def plot_Jcv_Jtrain(train_mses, cv_mses):
+    degrees = range(1, 11)
+    optimal_degree = np.argmin(cv_mses) + 1
+    plt.plot(degrees, train_mses, c='r', marker='o', label='Training MSEs')
+    plt.plot(degrees, cv_mses, c='b', marker='o', label='Cross validation MSEs')
+    plt.axvline(optimal_degree, lw=1, color = dlc["dlmagenta"])
+    plt.annotate("optimal degree", xy=(optimal_degree,200),xycoords='data',
+                xytext=(0.5, 0.4), textcoords='axes fraction', fontsize=10,
+                   arrowprops=dict(arrowstyle="->", connectionstyle="arc3", 
+                                   color=dlc['dldarkred'], lw=1))
+    plt.title('degree of polynomial vs. train and CV MSEs')
+    plt.xlabel('degrees')
+    plt.ylabel('MSEs')
+    plt.legend()
+    plt.show()
