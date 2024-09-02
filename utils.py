@@ -18,16 +18,13 @@ def get_data():
     x_cv, x_test, y_cv, y_test = train_test_split(x_, y_, test_size=0.5, random_state=1)
     del x_, y_
 
-
     return x_train, x_cv, x_test, y_train, y_cv, y_test
 
 
 def choose_degree(x_train, x_cv, y_train, y_cv):
     train_mses = []
     cv_mses = []
-    models = []
     polys = []
-    scalers = []
     for degree in range(1, 11):
         poly = PolynomialFeatures(degree=degree, include_bias=False)
         x_train_mapped = poly.fit_transform(x_train)
@@ -35,11 +32,9 @@ def choose_degree(x_train, x_cv, y_train, y_cv):
 
         scalar = StandardScaler()
         x_train_mapped_scaled = scalar.fit_transform(x_train_mapped)
-        scalers.append(scalar)
 
         model = LinearRegression()
         model.fit(x_train_mapped_scaled, y_train)
-        models.append(model)
 
         yhat = model.predict(x_train_mapped_scaled)
         train_mses.append(mean_squared_error(y_train, yhat) / 2)
@@ -49,3 +44,5 @@ def choose_degree(x_train, x_cv, y_train, y_cv):
 
         yhat = model.predict(x_cv_mapped_scaled)
         cv_mses.append(mean_squared_error(y_cv, yhat) / 2)
+
+    return train_mses, cv_mses
